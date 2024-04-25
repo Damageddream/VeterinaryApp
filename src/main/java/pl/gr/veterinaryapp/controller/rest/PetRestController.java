@@ -1,6 +1,7 @@
 package pl.gr.veterinaryapp.controller.rest;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,6 +24,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("api/pets")
 @RestController
 public class PetRestController {
@@ -32,11 +34,13 @@ public class PetRestController {
 
     @DeleteMapping(path = "/{id}")
     public void delete(@PathVariable int id) {
+        log.info("Delete request on /api/pets/"+id+" to delete target pet");
         petService.deletePet(id);
     }
 
     @GetMapping(path = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     public PetResponseDto getPet(@AuthenticationPrincipal User user, @PathVariable long id) {
+        log.info("Get request on /api/pets/"+id+" to get target pet by id authenticated as :{}", user.toString());
         var pet = mapper.map(petService.getPetById(user, id));
         addLinks(pet);
         return pet;
@@ -44,8 +48,8 @@ public class PetRestController {
 
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
     public List<PetResponseDto> getAllPets(@AuthenticationPrincipal User user) {
+        log.info("Get request on /api/pets/ to list of all pets, authenticated as :{} ", user.toString());
         var pets = mapper.mapAsList(petService.getAllPets(user));
-
         for (var pet : pets) {
             addLinks(pet);
             var link = linkTo(methodOn(PetRestController.class).getPet(user, pet.getId()))
@@ -59,7 +63,8 @@ public class PetRestController {
     @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
     public PetResponseDto createPet(@AuthenticationPrincipal User user, @RequestBody PetRequestDto petRequestDto) {
         System.out.println(user);
-
+        log.info("Post request on /api/pets/ to create new pet with body PetRequestDTO: {}", petRequestDto.toString(),
+                "authenticated as :{} ", user.toString());
         var pet = mapper.map(petService.createPet(user, petRequestDto));
         addLinks(pet);
         return pet;
