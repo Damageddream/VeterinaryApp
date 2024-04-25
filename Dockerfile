@@ -2,6 +2,7 @@
 FROM gradle:7.2.0-jdk11 as builder
 WORKDIR /app
 COPY . .
+RUN chmod +x ./gradlew
 RUN ./gradlew build
 
 # Stage 2: Create a lightweight container to run the application
